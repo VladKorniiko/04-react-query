@@ -1,17 +1,24 @@
-import { type FormEvent } from "react";
 import styles from "./SearchBar.module.css";
 import toast from "react-hot-toast";
+import { Formik, Form, Field } from "formik";
+import type { FormikHelpers } from "formik";
 
 interface SearchBarProps {
   onSubmit: (query: string) => void;
 }
 
+interface FormValues {
+  query: string;
+}
+
 export default function SearchBar({ onSubmit }: SearchBarProps) {
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    const query = (formData.get("query") as string).trim();
+  const initialValues: FormValues = { query: "" };
+
+  const handleSubmit = (
+    values: FormValues,
+    { resetForm }: FormikHelpers<FormValues>
+  ) => {
+    const query = values.query.trim();
 
     if (!query) {
       toast.error("Please enter your search query.");
@@ -19,7 +26,7 @@ export default function SearchBar({ onSubmit }: SearchBarProps) {
     }
 
     onSubmit(query);
-    form.reset();
+    resetForm();
   };
 
   return (
@@ -33,19 +40,24 @@ export default function SearchBar({ onSubmit }: SearchBarProps) {
         >
           Powered by TMDB
         </a>
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <input
-            className={styles.input}
-            type="text"
-            name="query"
-            autoComplete="off"
-            placeholder="Search movies..."
-            autoFocus
-          />
-          <button className={styles.button} type="submit">
-            Search
-          </button>
-        </form>
+
+        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+          {() => (
+            <Form className={styles.form}>
+              <Field
+                className={styles.input}
+                type="text"
+                name="query"
+                autoComplete="off"
+                placeholder="Search movies..."
+                autoFocus
+              />
+              <button className={styles.button} type="submit">
+                Search
+              </button>
+            </Form>
+          )}
+        </Formik>
       </div>
     </header>
   );
